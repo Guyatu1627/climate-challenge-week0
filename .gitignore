@@ -1,0 +1,15 @@
+# Python junk
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+ENV/
+
+# Data
+data/
+
+# IDE files
+.vscode/
+.idea/
