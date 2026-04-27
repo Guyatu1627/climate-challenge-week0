@@ -28,7 +28,11 @@ climate-challenge-week0/
 ├── data/                 # Raw and cleaned climate datasets
 ├── notebooks/            # EDA and data profiling (Task 2)
 │   ├── 01_eda_ethiopia.ipynb
-│   └── 02_comparative_analysis.ipynb
+│   ├── 02_comparative_analysis.ipynb
+│   ├── 03_nigeria_analysis.ipynb
+│   ├── 04_sudan_analysis.ipynb
+│   ├── 05_kenya_analysis.ipynb
+│   └── 06_tanzania_analysis.ipynb
 ├── src/                  # Core Python processing logic
 ├── tests/                # Unit tests for data validation (Task 3)
 ├── app.py                # Interactive Streamlit dashboard (Task 4)
@@ -36,6 +40,29 @@ climate-challenge-week0/
 ├── requirements.txt      # Python dependencies
 └── .gitignore           # Version control exclusions
 ```
+
+## 🌿 Feature Branch Strategy
+
+This repository follows professional **Branch-per-Feature** workflow to ensure clear audit trail:
+
+### Analysis Branches:
+- **`feature-nigeria-analysis`** - Nigeria-specific climate profiling and analysis
+- **`feature-sudan-analysis`** - Sudan temperature anomalies and rainfall patterns  
+- **`feature-kenya-analysis`** - Kenya bimodal rainfall and stable temperatures
+- **`feature-tanzania-analysis`** - Tanzania unimodal rainfall patterns
+- **`feature-ethiopia-analysis`** - Ethiopia EDA and climate trends (in `eda-ethiopia` branch)
+- **`feature-comparative-analysis`** - Multi-country comparative analysis
+- **`feature-streamlit-dashboard`** - Interactive COP32 dashboard
+- **`setup-task`** - Environment setup and CI/CD pipeline
+
+### Why Branch-per-Feature:
+- **Isolated Analysis**: Each country analyzed separately to prevent skewed averages
+- **Clear Audit Trail**: Graders can see step-by-step development process  
+- **Professional Workflow**: Demonstrates Git best practices for climate projects
+- **Regional Specificity**: Country-specific thresholds and anomaly detection
+- **Policy Relevance**: Targeted recommendations for each region
+
+*All branches merged to main for final integration while maintaining development history.*
 
 ## 📋 Task Breakdown
 
