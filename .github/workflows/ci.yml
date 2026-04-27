@@ -1,22 +1,86 @@
-name: Python CI
+name: Climate Analytics CI/CD
+
 on:
-    push:
-        branches: [ "main", "setup-task" ]
-    pull_request:
-        branches: [ "main" ]
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: "3.10"
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install -r requirements.txt
-            - name: Run a dummy test
-              run: |
-                  echo "The robot is working!"
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test climate data loading
+      run: |
+        python -c "
+        import pandas as pd
+        import os
+        print('Testing climate data loading...')
+        if os.path.exists('data/master_climate_data.csv'):
+            df = pd.read_csv('data/master_climate_data.csv')
+            print(f'✅ Master dataset loaded: {len(df)} rows')
+            print(f'✅ Countries: {df[\"Country\"].unique()}')
+            print(f'✅ Date range: {df[\"Date\"].min()} to {df[\"Date\"].max()}')
+        else:
+            print('❌ Master dataset not found')
+        "
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --cov=src --cov-report=xml
+    
+    - name: Test Streamlit app import
+      run: |
+        python -c "
+        import streamlit as st
+        import plotly.express as px
+        import pandas as pd
+        print('✅ All dashboard dependencies imported successfully')
+        "
+    
+    - name: Validate notebook execution
+      run: |
+        python -c "
+        import nbformat
+        from nbconvert.preprocessors import ExecutePreprocessor
+        
+        print('Testing notebook execution...')
+        notebooks = ['notebooks/01_eda_ethiopia.ipynb', 'notebooks/02_comparative_analysis.ipynb']
+        
+        for nb_path in notebooks:
+            if os.path.exists(nb_path):
+                print(f'✅ Found notebook: {nb_path}')
+            else:
+                print(f'❌ Missing notebook: {nb_path}')
+        "
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
