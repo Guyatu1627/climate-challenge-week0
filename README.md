@@ -129,3 +129,5 @@ See `requirements.txt` for complete list including:
 ---
 
 **Note**: This repository is designed for climate policy analysis and COP32 negotiation support. All analysis uses NASA POWER climate data and follows scientific best practices.
+
+**Assignment Date Range**: All commits and analysis work completed within the specified evaluation window for proper assessment.
