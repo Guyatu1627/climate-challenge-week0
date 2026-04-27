@@ -69,7 +69,8 @@ This repository follows professional **Branch-per-Feature** workflow to ensure c
 ### **Task 1: Git & Environment Setup**
 - ✅ Virtual environment configuration
 - ✅ Dependencies managed via `requirements.txt`
-- ✅ GitHub Actions workflow for automated testing
+- ✅ Notebook execution dependencies included for CI validation
+- ✅ GitHub Actions workflow for automated testing and notebook checks
 - ✅ Proper `.gitignore` for clean version control
 
 ### **Task 2: Data Profiling, Cleaning & EDA**
