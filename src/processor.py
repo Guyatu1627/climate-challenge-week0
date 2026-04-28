@@ -37,14 +37,19 @@ class ClimateDataProcessor:
         
     def load_climate_data(self, countries: List[str] = None) -> pd.DataFrame:
         """
-        Load and combine climate data from multiple country files.
+        Load climate data from a master file or from the raw country CSV files.
         
         Args:
-            countries (List[str]): List of countries to load. Defaults to all available.
+            countries (List[str]): List of countries to load when a data directory is provided.
             
         Returns:
-            pd.DataFrame: Combined climate dataset
+            pd.DataFrame: Loaded climate dataset
         """
+        if self.data_path.is_file():
+            logger.info(f"Loading climate data from file: {self.data_path}")
+            self.master_df = pd.read_csv(self.data_path)
+            return self.master_df
+
         if countries is None:
             countries = ['ethiopia', 'kenya', 'nigeria', 'sudan', 'tanzania']
         
@@ -68,7 +73,51 @@ class ClimateDataProcessor:
         logger.info(f"Combined dataset: {len(self.master_df)} records")
         
         return self.master_df
-    
+
+    def load_and_clean(self) -> pd.DataFrame:
+        """
+        Load climate data and apply standard cleaning in one step.
+        """
+        df = self.load_climate_data()
+        self.master_df = self.clean_climate_data(df)
+        return self.master_df
+
+    def get_country_metrics(self, country_name: str) -> Dict[str, Union[float, int]]:
+        """Returns a dictionary of key KPIs for a specific country."""
+        if self.master_df is None:
+            self.load_and_clean()
+            
+        subset = self.master_df[self.master_df['Country'] == country_name]
+        if subset.empty:
+            return {
+                "avg_temp": float("nan"),
+                "max_temp": float("nan"),
+                "total_rainfall": 0.0,
+                "rain_days": 0
+            }
+
+        return {
+            "avg_temp": subset['T2M'].mean(),
+            "max_temp": subset['T2M'].max(),
+            "total_rainfall": subset['PRECTOTCORR'].sum(),
+            "rain_days": int((subset['PRECTOTCORR'] > 0.1).sum())
+        }
+
+    def predict_next_season_trend(self, country_name: str):
+        """
+        Simple trend analysis to estimate if the next season 
+        will be hotter than the historical average.
+        """
+        if self.master_df is None:
+            self.load_and_clean()
+
+        country_data = self.master_df[self.master_df['Country'] == country_name]
+        recent_data = country_data.tail(365)
+        recent_avg = recent_data['T2M'].mean() if not recent_data.empty else country_data['T2M'].mean()
+        historical_avg = country_data['T2M'].mean()
+        diff = recent_avg - historical_avg
+        return ("Increasing" if diff > 0 else "Stable/Decreasing", diff)
+
     def clean_climate_data(self, df: pd.DataFrame = None) -> pd.DataFrame:
         """
         Clean climate data using vectorized pandas operations.

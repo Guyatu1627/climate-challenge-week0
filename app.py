@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 from datetime import datetime
+from src.processor import ClimateDataProcessor
 
 # 1. Set the Page Title
 st.set_page_config(page_title="EthioClimate COP32 Portal", layout="wide", initial_sidebar_state="expanded")
@@ -53,15 +54,26 @@ st.markdown("### 📊 Executive Summary for Climate Negotiators")
 col1, col2, col3, col4 = st.columns(4)
 
 # 5. Load the Master Data
-@st.cache_data
-def load_data():
-    df = pd.read_csv("data/master_climate_data.csv")
-    df['Date'] = pd.to_datetime(df['Date'])
-    df['Year'] = df['Date'].dt.year
-    df['Month'] = df['Date'].dt.month
-    return df
+processor = ClimateDataProcessor("data/master_climate_data.csv")
+df = processor.load_and_clean()
 
-df = load_data()
+# Country-level KPIs from the climate engine
+selected_country = st.sidebar.selectbox(
+    "🌍 Select Country for Engine KPIs:",
+    options=df['Country'].unique(),
+    index=0,
+    help="Select a country to view climate KPIs powered by the ClimateDataProcessor engine"
+)
+metrics = processor.get_country_metrics(selected_country)
+trend_label, trend_diff = processor.predict_next_season_trend(selected_country)
+
+st.markdown("### 🔧 Climate Engine Country KPIs")
+col1, col2, col3 = st.columns(3)
+col1.metric("Average Temperature", f"{metrics['avg_temp']:.2f} °C")
+col2.metric("Total Rainfall", f"{metrics['total_rainfall']:.1f} mm")
+col3.metric("Rainy Days", metrics['rain_days'])
+
+st.markdown(f"**Trend Outlook for {selected_country}:** {trend_label} ({trend_diff:+.2f}°C difference)")
 
 # Calculate key metrics for executive summary
 latest_year = df['Year'].max()
